@@ -8,31 +8,6 @@
 define(['backbone', 'utils', 'config'], function(Backbone, _, c) {
     var Circle = {
 
-        constructor: function() {
-            Backbone.Model.apply(this, arguments);
-            // Возвращаем точки, вылетевшие за границу
-            this
-                .on('change:x', function(node, x) {
-                    if(x < 0 && this.vx < 0) {
-                        this.vx *= -1;
-                    } else if(x > this.get('field').width && this.vx > 0) {
-                        this.vx *= -1;
-                    }
-                })
-                .on('change:y', function(node, y) {
-                    if(y < 0 && this.vy < 0) {
-                        this.vy *= -1;
-
-                    } else if(y > this.get('field').height && this.vy > 0) {
-                        this.vy *= -1;
-                    }
-                })
-        },
-        
-        // Для увеличения производительности в некоторых местах 
-        // возможно использовать "разряженное" оповещение о событиях
-        throttleTrigger: _.throttle(Backbone.Model.prototype.trigger,1),
-
         defaults: function() {
             return {
                 vx: Math.random() * c.speedFactor - 1,
@@ -78,9 +53,6 @@ define(['backbone', 'utils', 'config'], function(Backbone, _, c) {
     // данные алиасы нужны для корректной работы модели с d3
     ['vx', 'vy', 'radius', 'fixed'].forEach(function(prop) {
         _.createAlias(Circle, prop);
-    });
-    ['x', 'y', 'px', 'py'].forEach(function(prop) {
-        _.createAlias(Circle, prop, {throttle: c.enableThrottle});
     });
     
     return Backbone.Model.extend(Circle)

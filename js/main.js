@@ -58,8 +58,8 @@ define(['config', 'd3', 'utils', 'models/Circle', 'models/Colorize'],
         //привязываем "отпугивалку" к курсору
         svg.on("mousemove", function() {
             var p1 = d3.mouse(this);
-            root.px= p1[0];
-            root.py= p1[1];
+            root.px = p1[0];
+            root.py = p1[1];
 
         });
 
@@ -81,21 +81,43 @@ define(['config', 'd3', 'utils', 'models/Circle', 'models/Colorize'],
         var colorize = new Colorize({
             items: circles,
         });
-    
+
         colorize.start();
 
 
         force.on("tick", function(e) {
 
             for(var i = 0; ++i < nodes.length;) {
-                nodes[i].doStep();
+                var node = nodes[i];
+                node.doStep();
             }
+
+
+
 
             var q = d3.geom.quadtree(nodes),
                 n = nodes.length;
 
             for(var i = 0; ++i < nodes.length;) {
                 q.visit(nodes[i].collide());
+            }
+            
+            for(var i = 0; ++i < nodes.length;) {
+                var node = nodes[i];
+
+                if(node.x < 0 && node.vx < 0) {
+                    node.vx *= -1;
+                } else if(node.x > node.get('field').width && node.vx > 0) {
+                    node.vx *= -1;
+                }
+
+
+                if(node.y < 0 && node.vy < 0) {
+                    node.vy *= -1;
+
+                } else if(node.y > node.get('field').height && node.vy > 0) {
+                    node.vy *= -1;
+                }
             }
 
 
