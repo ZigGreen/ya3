@@ -9,7 +9,7 @@ define([], function() {
     return {
         
         // кол-во точек
-        nodesCount: 200,
+        nodesCount: 100,
         
         // сила притяжения точек
         gravity: 0.0005,
