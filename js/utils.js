@@ -45,33 +45,46 @@ define(['underscore'], function(_) {
             }
             return obj;
         },
-        
+
         /**
          * Создаёт getter'ы и setter'ы для указанных полей fields
-         * @param {Object} obj 
+         * @param {Object} obj
          * @param {...Array.<String>|String} fields
          * @returns {Object} obj
          */
-        createAliases: function(obj) {
-            props = _.flatten(_.rest(arguments));
-            props.forEach(function(prop) {
-                Object.defineProperty(obj, prop, {
-                    get: function() {
-                        return this.get(prop)
-                    },
-                    set: function(v) {
-                        // для увеличения производительности присваиваем напрямую
-                        this.attributes[prop] = v;
-                        this.trigger('change:' + prop, this, v);
-                        return this.get(prop);
-                    },
-                    enumerable: true,
-                    configurable: true
-                })
+        createAlias: function(obj, prop, options) {
+            
+            function generateSetter(options) {
+                
+                var triggerFnName = options.throttle ? 'throttleTrigger' : 'trigger';
+                
+                return function (v) {
+                    // для увеличения производительности присваиваем напрямую
+                    this.attributes[prop] = v;
+
+                    this[triggerFnName]('change:' + prop, this, v);
+                    
+                    return this.attributes[prop];
+                }
+                
+            }
+            options = options || {};
+
+            defineProperty(obj, prop, {
+
+                get: function() {
+                    return this.attributes[prop]
+                },
+
+                set: generateSetter(options),
+
+                enumerable: true,
+                configurable: true
             })
 
             return obj;
-        }
+        },
+
 
     });
 

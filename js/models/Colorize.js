@@ -7,19 +7,29 @@
 define(['d3', 'backbone', 'utils', 'config'], function(d3, Backbone, _, c) {
 
     return Backbone.Model.extend({
+
         defaults: {
             playing: false,
             colors: c.colors,
+            startColor: c.colors[c.colors.length - 1],
             random: c.randomColorize,
             meanDuration: c.meanColorizeDuration,
-            variance: c.meanColorizeDuration / 16      
+            variance: c.meanColorizeDuration / 16
         },
 
-        start: function() {
+        start: function(color) {
+
             this.set('playing', true);
+            this.get('items').style("fill", this.get('startColor'));
+            this._setTransition();
+
             return this;
         },
 
+        /**
+         * Останавливает все зацикленные анимации,
+         * сгенерированные инстансом
+         **/
         stop: function() {
             this.set('playing', false);
         },
@@ -28,32 +38,22 @@ define(['d3', 'backbone', 'utils', 'config'], function(d3, Backbone, _, c) {
             return this.get('playing');
         },
 
-        transitionGenerator: function() {
-            var control = this;
+        _setTransition: function repeat() {
+            var items = this.get('items');
+            if(!this.isPlaying()) return;
 
-            return function() {
+            var duration = this.get('random') ?
+                d3.random.normal(this.get('meanDuration'), this.get('variance')) :
+                this.get('meanDuration');
 
-                var circle = d3.select(this);
+            for(var i = 0, colors = this.get('colors'); i < colors.length; i++)
+                items = items.transition()
+                    .duration(duration)
+                    .style("fill", colors[i]);
 
-                (function repeat() {
+            items.each("end", repeat.bind(this, items));
 
-                    if(!control.isPlaying()) return;
-
-                    var duration = control.get('random') ?
-                        d3.random.normal(control.get('meanDuration'), control.get('variance')) :
-                        control.get('meanDuration');
-                    
-                    for(var i = 0, colors = control.get('colors'); i < colors.length; i++)
-                        circle = circle.transition()
-                            .duration(duration)
-                            .style("fill", colors[i]);
-
-                    circle.each("end", repeat);
-                    
-                })();
-            }
         }
-
 
     })
 
